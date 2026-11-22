@@ -73,10 +73,13 @@ function openAuth(mode) {
 }
 async function submitAuth(e) {
   e.preventDefault();
-  if (!db) return;
   const email = $("auth-email").value.trim();
   const password = $("auth-password").value;
   const button = $("auth-submit");
+  if (!db) {
+    showMessage("auth-message", "A ligação ao Supabase não está configurada. Falta o ficheiro config.js com as credenciais do projeto.", true);
+    return;
+  }
   button.disabled = true; button.textContent = "A processar…";
   showMessage("auth-message", "");
   try {
@@ -98,7 +101,7 @@ async function submitAuth(e) {
   finally { button.disabled = false; button.innerHTML = authMode === "signup" ? "Criar conta <span>↗</span>" : "Entrar <span>↗</span>"; }
 }
 async function resetPassword() {
-  if (!db) return;
+  if (!db) return showMessage("auth-message", "A ligação ao Supabase não está configurada. Falta o ficheiro config.js.", true);
   const email = $("auth-email").value.trim();
   if (!email) return showMessage("auth-message", "Escreve primeiro o teu email.", true);
   const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
