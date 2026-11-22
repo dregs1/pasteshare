@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("year").textContent = new Date().getFullYear();
   bindUI();
   if (!supabaseReady) {
-    setEditorMessage("Configura primeiro o Supabase: copia config.example.js para config.js e adiciona as tuas credenciais.", true);
-    $("paste-list").innerHTML = `<div class="empty-state"><div class="empty-icon">⚙</div><h3>Falta configurar a ligação</h3><p>Segue o README para ligar o projeto à tua base de dados Supabase.</p></div>`;
+    setEditorMessage("Configura o Supabase: abre config.js e substitui os dois valores de exemplo pelas credenciais públicas do teu projeto.", true);
+    $("paste-list").innerHTML = `<div class="empty-state"><div class="empty-icon">⚙</div><h3>Falta configurar a ligação</h3><p>Abre config.js e coloca a Project URL e a chave pública do Supabase. Depois executa schema.sql no SQL Editor do Supabase.</p></div>`;
     return;
   }
   const { data: { session }, error } = await db.auth.getSession();
@@ -83,7 +83,7 @@ async function submitAuth(e) {
   if (authMode === "signup" && password.length < 8) { showMessage("auth-message", "A palavra-passe deve ter pelo menos 8 caracteres.", true); return; }
   const button = $("auth-submit");
   if (!db) {
-    showMessage("auth-message", "A ligação ao Supabase não está configurada. Falta o ficheiro config.js com as credenciais do projeto.", true);
+    showMessage("auth-message", "Supabase ainda não configurado. Abre config.js e coloca a Project URL e a chave pública (anon/publishable) do teu projeto.", true);
     return;
   }
   button.disabled = true; button.textContent = "A processar…";
