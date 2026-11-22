@@ -1,7 +1,11 @@
 /* PasteShare — configura SUPABASE_URL e SUPABASE_ANON_KEY em config.js */
 const CONFIG = window.PASTESHARE_CONFIG || {};
 const $ = (id) => document.getElementById(id);
-const supabaseReady = Boolean(CONFIG.url && CONFIG.anonKey && window.supabase);
+const supabaseReady = Boolean(
+  CONFIG.url && CONFIG.anonKey && window.supabase &&
+  /^https:\/\/[^\s]+\.supabase\.co$/i.test(CONFIG.url) &&
+  !/TEU-PROJETO|TUA_CHAVE|COLOCA_AQUI/i.test(`${CONFIG.url} ${CONFIG.anonKey}`)
+);
 const db = supabaseReady ? window.supabase.createClient(CONFIG.url, CONFIG.anonKey) : null;
 let currentUser = null;
 let authMode = "login";
@@ -73,8 +77,10 @@ function openAuth(mode) {
 }
 async function submitAuth(e) {
   e.preventDefault();
-  const email = $("auth-email").value.trim();
+  const email = $("auth-email").value.trim().toLowerCase();
   const password = $("auth-password").value;
+  if (!email || !password) { showMessage("auth-message", "Preenche o email e a palavra-passe.", true); return; }
+  if (authMode === "signup" && password.length < 8) { showMessage("auth-message", "A palavra-passe deve ter pelo menos 8 caracteres.", true); return; }
   const button = $("auth-submit");
   if (!db) {
     showMessage("auth-message", "A ligação ao Supabase não está configurada. Falta o ficheiro config.js com as credenciais do projeto.", true);
@@ -87,10 +93,12 @@ async function submitAuth(e) {
       const { data, error } = await db.auth.signUp({ email, password });
       if (error) throw error;
       if (data.session) {
-        toast("Conta criada com sucesso.");
+        // Supabase emitiu uma sessão: o utilizador fica autenticado automaticamente.
         closeModal("auth-modal");
+        toast("Conta criada e sessão iniciada automaticamente.");
+        await setSession(data.session);
       } else {
-        showMessage("auth-message", "Conta criada. Confirma o teu email através do link que enviámos.");
+        showMessage("auth-message", "Conta criada! Confirma o email que enviámos. Depois poderás entrar.");
       }
     } else {
       const { error } = await db.auth.signInWithPassword({ email, password });
@@ -205,6 +213,8 @@ function friendlyError(err) {
   if (/Invalid login credentials/i.test(msg)) return "Email ou palavra-passe incorretos.";
   if (/Email not confirmed/i.test(msg)) return "Confirma o teu email antes de iniciar sessão.";
   if (/row-level security|permission denied/i.test(msg)) return "Sem permissão para esta operação. Confirma as políticas RLS no Supabase.";
+  if (/already registered|user already exists/i.test(msg)) return "Este email já tem uma conta. Tenta entrar ou recuperar a palavra-passe.";
+  if (/already registered|user already exists/i.test(msg)) return "Este email já tem conta. Tenta entrar ou recuperar a palavra-passe.";
   if (/duplicate key/i.test(msg)) return "Este registo já existe.";
   return msg;
 }
