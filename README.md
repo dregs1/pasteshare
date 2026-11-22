@@ -27,8 +27,8 @@ Aplicação web estática de partilha de snippets, em português, com autentica�
 ## 2. Configurar autenticação
 
 No Supabase, abre **Authentication → URL Configuration**:
-- Site URL: o URL do teu GitHub Pages, por exemplo `https://UTILIZADOR.github.io/pasteshare/`.
-- Redirect URLs: adiciona também `https://UTILIZADOR.github.io/pasteshare/**`.
+- Site URL: o URL do teu GitHub Pages, por exemplo `https://UTILIZADOR.github.io](https://dregs1.github.io/pasteshare/`.
+- Redirect URLs: adiciona também `https://UTILIZADOR.github.io](https://dregs1.github.io/pasteshare/**`.
 - Em **Authentication → Providers → Email**, mantém Email ativo.
 - Para desenvolvimento local, adiciona `http://localhost:8000/**` aos Redirect URLs.
 
