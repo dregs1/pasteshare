@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090d18">
+  <title>PasteShare — partilha snippets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="PasteShare início"><span class="brand-mark"><span></span><span></span><span></span></span><span>Paste<span class="brand-accent">Share</span></span></a>
+    <nav class="nav-actions">
+      <button class="btn btn-ghost" id="nav-login">Entrar</button>
+      <button class="btn btn-primary" id="nav-signup">Criar conta <span>↗</span></button>
+      <div class="user-menu hidden" id="user-menu"><span class="avatar" id="user-avatar">U</span><span id="user-email"></span><button class="btn btn-ghost btn-small" id="logout-btn">Sair</button></div>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow"><span class="pulse"></span> O teu espaço para snippets</div>
+      <h1>Partilha código.<br><span class="gradient-text">Sem complicações.</span></h1>
+      <p class="hero-copy">Guarda, organiza e partilha textos e código com links únicos. Os teus snippets, sempre à mão.</p>
+      <div class="hero-actions"><button class="btn btn-primary btn-large" id="hero-create">Criar um paste <span>＋</span></button><span class="secure-note"><span class="check">✓</span> Sincronizado na cloud</span></div>
+      <div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div>
+      <div class="code-float"><div class="float-head"><i></i><i></i><i></i><span>hello-world.js</span></div><pre><code>const idea = "share";
+if (idea) {
+  console.log("Hello, world!");
+}</code></pre></div>
+    </section>
+
+    <section class="workspace" id="editor-section">
+      <div class="section-heading"><div><div class="eyebrow muted">NOVO SNIPPET</div><h2>O que vais partilhar?</h2></div><span class="section-hint">Rápido. Simples. Teu.</span></div>
+      <form id="paste-form" class="editor-card">
+        <div class="field-row">
+          <label class="field title-field"><span>Título</span><input id="paste-title" maxlength="120" placeholder="Ex.: Configuração do servidor" required></label>
+          <label class="field language-field"><span>Linguagem</span><select id="paste-language"><option value="plaintext">Texto simples</option><option>javascript</option><option>typescript</option><option>python</option><option>html</option><option>css</option><option>json</option><option>bash</option><option>sql</option><option>java</option><option>php</option><option>go</option><option>rust</option><option>c</option><option>cpp</option><option>markdown</option></select></label>
+        </div>
+        <label class="field code-field"><span>Conteúdo</span><textarea id="paste-content" spellcheck="false" placeholder="// Cola aqui o teu código ou texto..." required></textarea></label>
+        <div class="editor-footer">
+          <div class="settings">
+            <label class="field compact-field"><span>Visibilidade</span><select id="paste-visibility"><option value="public">Público</option><option value="unlisted">Não listado</option><option value="private">Privado</option></select></label>
+            <label class="field compact-field"><span>Expiração</span><select id="paste-expiry"><option value="never">Nunca</option><option value="10m">10 minutos</option><option value="1h">1 hora</option><option value="1d">1 dia</option><option value="7d">7 dias</option><option value="30d">30 dias</option></select></label>
+          </div>
+          <button class="btn btn-primary" type="submit" id="save-paste">Guardar paste <span>↗</span></button>
+        </div>
+        <p class="form-message" id="editor-message" role="status"></p>
+      </form>
+    </section>
+
+    <section class="pastes-section">
+      <div class="section-heading"><div><div class="eyebrow muted">A TUA BIBLIOTECA</div><h2>Os teus pastes</h2></div><button class="btn btn-ghost btn-small" id="refresh-btn">↻ Atualizar</button></div>
+      <div id="paste-list" class="paste-list"><div class="empty-state"><div class="empty-icon">⌘</div><h3>A tua coleção começa aqui</h3><p>Inicia sessão para veres e gerires os teus snippets.</p><button class="btn btn-outline" id="empty-login">Entrar na conta</button></div></div>
+    </section>
+    <footer><a class="brand footer-brand" href="./"><span class="brand-mark"><span></span><span></span><span></span></span><span>Paste<span class="brand-accent">Share</span></span></a><span>Feito para partilhar o que importa.</span><span>© <span id="year"></span> PasteShare</span></footer>
+  </main>
+
+  <div class="modal-backdrop hidden" id="auth-modal">
+    <section class="modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      <button class="modal-close" data-close="auth-modal" aria-label="Fechar">×</button>
+      <div class="modal-logo"><span class="brand-mark"><span></span><span></span><span></span></span></div>
+      <div class="eyebrow muted" id="auth-eyebrow">BEM-VINDO DE VOLTA</div><h2 id="auth-title">Entra na tua conta</h2><p class="modal-copy" id="auth-copy">A tua biblioteca de snippets espera por ti.</p>
+      <form id="auth-form">
+        <label class="field"><span>Email</span><input type="email" id="auth-email" placeholder="tu@exemplo.com" autocomplete="email" required></label>
+        <label class="field"><span>Palavra-passe</span><input type="password" id="auth-password" placeholder="Mínimo 8 caracteres" minlength="8" autocomplete="current-password" required></label>
+        <button class="btn btn-primary btn-full" id="auth-submit" type="submit">Entrar <span>↗</span></button>
+        <p class="form-message" id="auth-message" role="status"></p>
+      </form>
+      <div class="auth-switch" id="auth-switch">Ainda não tens conta? <button id="switch-auth">Criar conta</button></div>
+      <button class="forgot-link" id="forgot-password">Esqueci-me da palavra-passe</button>
+    </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="view-modal">
+    <section class="modal view-modal" role="dialog" aria-modal="true" aria-labelledby="view-title">
+      <button class="modal-close" data-close="view-modal" aria-label="Fechar">×</button>
+      <div class="view-top"><div><div class="eyebrow muted" id="view-meta">PASTE</div><h2 id="view-title">Título</h2></div><button class="btn btn-outline btn-small" id="copy-view">Copiar código</button></div>
+      <pre class="view-code"><code id="view-content"></code></pre>
+      <div class="view-bottom"><span id="view-language"></span><span id="view-date"></span></div>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+</body>
+</html>
